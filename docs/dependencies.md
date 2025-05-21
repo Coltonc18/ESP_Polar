@@ -1,44 +1,75 @@
 # Dependencies
 
-## Arduino IDE
+This document lists all hardware and software dependencies required for the ESP32 Polar HRV Monitor project.
 
-Download and install the Arduino IDE from the official website:
-[https://www.arduino.cc/en/software](https://www.arduino.cc/en/software)
+## Hardware Requirements
 
-### Library Dependencies
+### Required Components
 
-- FreeRTOS
-  - Required for task management and queues
-  - Included with ESP32 Arduino core
-- BLE Libraries
-  - BLEDevice.h
-  - BLEUtils.h
-  - BLEScan.h
-  - BLEAdvertisedDevice.h
-  - Included with ESP32 Arduino core
-- esp32-hal-ledc.h
-  - PWM control for ESP32 boards
-  - Included with ESP32 Arduino core
-- Standard C++ Libraries
-  - queue
-  - cstdint
-  - Included with Arduino IDE
+- ESP32-S3 Development Board
+- Polar Sense heart rate sensor
+- USB cable for programming and serial communication
 
-### Board Dependencies
+### Optional Components
 
-- Developed for use on the ESP32-S3
-- Arduino IDE Setup:
-  1. Install ESP32 board support through Arduino Board Manager
-     - Add URL: <https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json>
-     - Install "ESP32 by Espressif Systems"
-  2. Select "ESP32S3 Dev Module" from board menu
-  3. Set USB CDC On Boot to "Enabled"
-  4. Set USB DFU On Boot to "Enabled"
-  5. Set Upload Mode to "UART0 / Hardware CDC"
-  6. Set CPU Frequency to "240MHz (WiFi/BT)"
-  7. Set Flash Mode to "QIO"
-  8. Set Flash Size to "4MB (32Mb)"
-  9. Set Partition Scheme to "Default 4MB with spiffs"
-  10. Set Core Debug Level to "None"
-  11. Set PSRAM to "Enabled"
-  12. Upload code to board
+- External circuit for PWM output (connected to GPIO 21)
+  - Recommended: RC circuit for smoothing PWM output
+  - Components:
+    - Resistor: 1kΩ
+    - Capacitor: 0.1µF
+
+## Software Requirements
+
+### Development Environment
+
+- Arduino IDE (version 2.0 or later)
+- ESP32 board support package
+
+### Required Libraries
+
+- ESP32 BLE Arduino
+  - Provides BLE functionality
+  - Version: 1.0.4 or later
+  - Installation: Arduino Library Manager
+
+- ESP32 HAL LEDC
+  - Provides PWM functionality
+  - Included with ESP32 board package
+  - No separate installation needed
+
+### Project-Specific Libraries
+
+These libraries are included in the project and don't require separate installation:
+
+- PolarBLEConnection
+  - Handles BLE communication with Polar sensors
+  - Location: `lib/PolarBLEConnection/`
+
+- Parameters
+  - Manages HRV calculations and data storage
+  - Location: `lib/Parameters/`
+
+- BoundedQueue
+  - Implements a thread-safe queue for PPI data
+  - Location: `lib/BoundedQueue/`
+
+## Version Compatibility
+
+### ESP32 Board Package
+
+- Version: 2.0.0 or later
+- URL: <https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json>
+
+### Arduino IDE
+
+- Version: 2.0.0 or later
+- Download: <https://www.arduino.cc/en/software>
+
+## Installation Notes
+
+1. Install Arduino IDE first
+2. Add ESP32 board support through Boards Manager
+3. Install required libraries through Library Manager
+4. Project-specific libraries are included in the repository
+
+For detailed installation instructions, see the [Setup Guide](setup.md).

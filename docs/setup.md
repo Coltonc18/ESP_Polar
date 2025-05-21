@@ -4,24 +4,7 @@ This guide provides detailed instructions for setting up and configuring the ESP
 
 ## Prerequisites
 
-### Hardware Requirements
-
-- ESP32-S3 Development Board
-- Polar Sense heart rate sensor
-- USB cable for programming and serial communication
-- Optional: External circuit for PWM output (connected to GPIO 21)
-
-### Software Requirements
-
-- Arduino IDE (version 2.0 or later)
-- ESP32 board support package
-- Required Libraries:
-  - ESP32 BLE Arduino
-  - ESP32 HAL LEDC
-  - Custom libraries (included in the project):
-    - PolarBLEConnection
-    - Parameters
-    - BoundedQueue
+See [Dependencies](dependencies.md) for a complete list of required hardware and software components.
 
 ## Installation Steps
 
@@ -32,7 +15,7 @@ This guide provides detailed instructions for setting up and configuring the ESP
 2. **Add ESP32 Board Support**
    - Open Arduino IDE
    - Go to File > Preferences
-   - Add the following URL to "Additional Boards Manager URLs": <https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json>
+   - Add the following URL to "Additional Boards Manager URLs":<https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json>
    - Go to Tools > Board > Boards Manager
    - Search for "esp32"
    - Install "ESP32 by Espressif Systems"
@@ -135,5 +118,4 @@ The following parameters can be modified in the code:
 After completing the setup:
 
 1. Review the [API Documentation](API.md) for detailed information about the code structure
-2. Check the [README](../README.md) for project overview and features
-3. Start collecting and analyzing HRV data
+2. Start collecting and analyzing HRV data!
