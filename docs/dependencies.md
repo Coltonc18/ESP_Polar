@@ -1,6 +1,11 @@
 # Dependencies
 
-## Library Dependencies
+## Arduino IDE
+
+Download and install the Arduino IDE from the official website:
+[https://www.arduino.cc/en/software](https://www.arduino.cc/en/software)
+
+### Library Dependencies
 
 - FreeRTOS
   - Required for task management and queues
@@ -19,7 +24,7 @@
   - cstdint
   - Included with Arduino IDE
 
-## Board Dependencies
+### Board Dependencies
 
 - Developed for use on the ESP32-S3
 - Arduino IDE Setup:
