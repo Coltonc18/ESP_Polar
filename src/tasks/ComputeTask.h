@@ -1,9 +1,9 @@
 #ifndef COMPUTE_TASK_H
 #define COMPUTE_TASK_H
 
-#include "Config.h"
-#include "PolarBLEConnection.h"
-#include "Parameters.h"
+#include "../utils/Config.h"
+#include "../core/PolarBLEConnection.h"
+#include "../core/Parameters.h"
 
 #include <esp32-hal-ledc.h>
 

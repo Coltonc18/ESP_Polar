@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <cstdint>
+#include <Arduino.h>
 
 #define NULL 0
 

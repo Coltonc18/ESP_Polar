@@ -1,7 +1,7 @@
 #ifndef _POLARBLECONNECT_H
 #define _POLARBLECONNECT_H
 
-#include "Config.h"
+#include "../utils/Config.h"
 
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -9,8 +9,8 @@
 #include <BLEAdvertisedDevice.h>
 #include <queue>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 
 #define PPI_QUEUE_SIZE 15
 

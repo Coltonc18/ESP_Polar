@@ -262,3 +262,25 @@ void updateHRV_TIPPI(uint16_t measurement) {
   HRV_TIPPI = (2.0 * PPI_Count * BIN_WIDTH) / float(maxBinValue);
   // Serial.printf("%u\n", HRV_TIPPI);
 }
+
+void printHRVParameters(uint16_t current_PPI) {
+  // Print start marker, timestamp and all parameters in CSV format with fixed width
+  Serial.print("START,");  // Line start marker
+  Serial.printf("%.2f,%u,%u,%.2f,%.2f,%u,%u,%.2f,%u,%u,%u,%.2f,%.2f,%u,END\r\n",
+    millis() / 1000.0,  // Timestamp (seconds since start)
+    PPI_Count,          // PPI Count
+    current_PPI,        // Most recent PPI measurement
+    HRV_MeanPPI,        // Mean PPI
+    HRV_MedianPPI,      // Median PPI
+    HRV_MinPPI,         // Min PPI
+    HRV_MaxPPI,         // Max PPI
+    HRV_SDPPI,          // SD PPI
+    HRV_Prc20PPI,       // 20th Percentile PPI
+    HRV_Prc80PPI,       // 80th Percentile PPI
+    HRV_RMSSD,          // RMSSD
+    HRV_pPPI50,         // pPPI50
+    HRV_HTI,            // HTI
+    HRV_TIPPI           // TIPPI
+  );
+  delay(20);  // Increased delay to ensure complete transmission
+}

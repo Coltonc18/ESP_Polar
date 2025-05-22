@@ -1,8 +1,9 @@
-#include "PolarBLEConnection.h"
-#include "Parameters.h"
-#include "BoundedQueue.hpp"
-#include "BLEReceiveTask.h"
-#include "ComputeTask.h"
+#include "src/core/PolarBLEConnection.h"
+#include "src/core/Parameters.h"
+#include "src/utils/BoundedQueue.hpp"
+#include "src/utils/Config.h"
+#include "src/tasks/BLEReceiveTask.h"
+#include "src/tasks/ComputeTask.h"
 
 #include <esp32-hal-ledc.h>
 

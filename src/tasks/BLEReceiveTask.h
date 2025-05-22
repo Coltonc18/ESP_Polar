@@ -1,8 +1,9 @@
 #ifndef BLERECEIVE_TASK_H
 #define BLERECEIVE_TASK_H
 
-#include "Config.h"
-#include "PolarBLEConnection.h"
+#include "../utils/Config.h"
+#include "../core/PolarBLEConnection.h"
+#include "ComputeTask.h"
 
 #include <esp32-hal-ledc.h>
 
