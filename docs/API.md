@@ -94,7 +94,7 @@ For detailed PWM configuration instructions, see the [Setup Guide](setup.md).
 ### CSV Output Structure
 
 ```txt
-START,Timestamp,PPI_Count,Mean_PPI,Median_PPI,Max_PPI,SD_PPI,Prc20_PPI,Prc80_PPI,RMSSD,pPPI50,HTI,TIPPI,END
+Timestamp,PPI_Count,Mean_PPI,Median_PPI,Max_PPI,SD_PPI,Prc20_PPI,Prc80_PPI,RMSSD,pPPI50,HTI,TIPPI
 ```
 
 ### PPI Data Structure
