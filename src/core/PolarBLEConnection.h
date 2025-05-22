@@ -1,13 +1,18 @@
-#ifndef _POLARBLECONNECT_H_
-#define _POLARBLECONNECT_H_
+#ifndef _POLARBLECONNECT_H
+#define _POLARBLECONNECT_H
+
+#include "Config.h"
 
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
+#include <queue>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+
+#define PPI_QUEUE_SIZE 15
 
 typedef struct ppi_data {
   unsigned long timestamp;
@@ -116,4 +121,4 @@ class PolarBLEConnection {
 
 };  // class PolarBLEConnection
 
-#endif  // _POLARBLECONNECT_H_
+#endif  // _POLARBLECONNECT_H

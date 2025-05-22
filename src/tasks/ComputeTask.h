@@ -1,9 +1,11 @@
 #ifndef COMPUTE_TASK_H
 #define COMPUTE_TASK_H
 
+#include "Config.h"
 #include "PolarBLEConnection.h"
 #include "Parameters.h"
-#include "esp32-hal-ledc.h"
+
+#include <esp32-hal-ledc.h>
 
 #define PWM_PIN  21       // Attatched to GPIO pin 21
 #define PWM_FREQ 5000     // 5 kHz

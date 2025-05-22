@@ -1,8 +1,4 @@
 #include "PolarBLEConnection.h"
-#include <queue>
-
-#define ONBOARD_LED 48
-#define QUEUE_SIZE 15
 
 void processPpgData(uint64_t time, float ppgGrn, float ppgRed, float ppgInf, float ppgAmb);
 
@@ -33,7 +29,7 @@ PolarBLEConnection::PolarBLEConnection(String serviceUUID,
   this->controlCharUUID = BLEUUID(controlCharUUID.c_str());
   this->dataCharUUID =    BLEUUID(dataCharUUID.c_str());
 
-  this->ppiQueue = xQueueCreate(QUEUE_SIZE, sizeof(PPIData));
+  this->ppiQueue = xQueueCreate(PPI_QUEUE_SIZE, sizeof(PPIData));
 }
 
 // Call the correct callback function based on the type of measurement

@@ -1,11 +1,10 @@
 #include "PolarBLEConnection.h"
 #include "Parameters.h"
 #include "BoundedQueue.hpp"
-#include "esp32-hal-ledc.h"
-#include "src/tasks/BLEReceiveTask.h"
-#include "src/tasks/ComputeTask.h"
+#include "BLEReceiveTask.h"
+#include "ComputeTask.h"
 
-#define ONBOARD_LED 48    // ESP32-S3 has an onboard Neopixel attached to this pin
+#include <esp32-hal-ledc.h>
 
 void setup() {
   Serial.begin(115200);
@@ -18,5 +17,5 @@ void setup() {
 }
 
 void loop() {
-  // Empty loop, tasks are handled in the background
+  // Empty loop, tasks are handled in the background by notifications
 }

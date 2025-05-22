@@ -2,27 +2,22 @@
  * Note: NN and PPI are used interchangeably in this code. PPI is the term
  * used by Polar, while NN is the term used in literature.
  */
+#ifndef _PARAMETERS_H
+#define _PARAMETERS_H
 
-#ifndef _PARAMETERS_H_
-#define _PARAMETERS_H_
-
-#include <cstdint>
-
+#include "Config.h"
 #include "BoundedQueue.hpp"
 
-#define NUM_BINS 218     // Number of bins in the histogram (300 - 2000 ms) / 7.8125 ms
-#define BIN_WIDTH 7.815  // Width of histogram bins (in ms)
-#define BIN_START 300.0  // Lowest PPI value in the histogram (in ms)
-#define BIN_END 2000.0   // Highest PPI value in the histogram (in ms)
+#define NUM_BINS 218      // Number of bins in the histogram (300 - 2000 ms) / 7.8125 ms
+#define BIN_WIDTH 7.815   // Width of histogram bins (in ms)
+#define BIN_START 300.0   // Lowest PPI value in the histogram (in ms)
+#define BIN_END 2000.0    // Highest PPI value in the histogram (in ms)
 #define HIST_WIDTH BIN_END - BIN_START  // Width of the histogram (in ms)
 
 #define PPI_TO_BIN(x) \
     (((int)(((x) - BIN_START) / BIN_WIDTH) < 0) ? 0 : \
     (((int)(((x) - BIN_START) / BIN_WIDTH) >= NUM_BINS) ? (NUM_BINS-1) : \
     (int)(((x) - BIN_START) / BIN_WIDTH)))
-
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 // Queue to store PPI measurements
 extern BoundedQueue<uint16_t> ppiQueue;
@@ -100,4 +95,4 @@ void updateHRV_HTI(uint16_t measurement);
 void updateHRV_TIPPI(uint16_t measurement);
 void updateHistogram(uint16_t measurement, uint16_t popped);
 
-#endif  // _PARAMETERS_H_
+#endif  // _PARAMETERS_H

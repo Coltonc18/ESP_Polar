@@ -1,8 +1,10 @@
 #ifndef BLERECEIVE_TASK_H
 #define BLERECEIVE_TASK_H
 
+#include "Config.h"
 #include "PolarBLEConnection.h"
-#include "esp32-hal-ledc.h"
+
+#include <esp32-hal-ledc.h>
 
 class BLEReceiveTask {
 public:
