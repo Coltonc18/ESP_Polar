@@ -68,3 +68,7 @@ Thumbs.db
 # Configuration files
 .markdownlint.json
 .editorconfig
+
+# Jupyter Notebook files
+*.ipynb
+.ipynb_checkpoints/
