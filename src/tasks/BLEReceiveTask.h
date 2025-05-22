@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BLERECEIVE_TASK_H
+#define BLERECEIVE_TASK_H
 
 #include "PolarBLEConnection.h"
 #include "esp32-hal-ledc.h"
@@ -13,3 +14,5 @@ private:
   static TaskHandle_t taskHandle;
   static PolarBLEConnection* connection;
 };
+
+#endif // BLERECEIVE_TASK_H

@@ -1,8 +1,3 @@
-/*
- * Copyright ©2025 AMP Lab, University of Washington. All rights reserved.
- * Authored by Colton Carroll.
- */
-
 #ifndef _POLARBLECONNECT_H_
 #define _POLARBLECONNECT_H_
 

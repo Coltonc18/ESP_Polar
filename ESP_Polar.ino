@@ -1,8 +1,3 @@
-/*
- * Copyright ©2025 AMP Lab, University of Washington. All rights reserved.
- * Authored by Colton Carroll.
- */
-
 #include "PolarBLEConnection.h"
 #include "Parameters.h"
 #include "BoundedQueue.hpp"

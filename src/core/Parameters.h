@@ -1,7 +1,4 @@
 /*
- * Copyright ©2025 AMP Lab, University of Washington. All rights reserved.
- * Authored by Colton Carroll. 
- * 
  * Note: NN and PPI are used interchangeably in this code. PPI is the term
  * used by Polar, while NN is the term used in literature.
  */
@@ -9,9 +6,9 @@
 #ifndef _PARAMETERS_H_
 #define _PARAMETERS_H_
 
-#include "BoundedQueue.hpp"
-
 #include <cstdint>
+
+#include "BoundedQueue.hpp"
 
 #define NUM_BINS 218     // Number of bins in the histogram (300 - 2000 ms) / 7.8125 ms
 #define BIN_WIDTH 7.815  // Width of histogram bins (in ms)
