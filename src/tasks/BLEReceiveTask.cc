@@ -1,7 +1,5 @@
 #include "BLEReceiveTask.h"
 
-#include <esp32-hal-ledc.h>
-
 TaskHandle_t BLEReceiveTask::taskHandle = NULL;
 PolarBLEConnection* BLEReceiveTask::connection = nullptr;
 

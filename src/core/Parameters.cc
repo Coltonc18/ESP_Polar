@@ -66,7 +66,7 @@ void updateHRVParameters(uint16_t measurement) {
   updateHRV_pPPI50(measurement, popped);
   updateHRV_HTI(measurement);
   updateHRV_TIPPI(measurement);
-  ProcessNewPPI(measurement);
+  ProcessNewPPI(&mem_ctx, measurement);
   prevMeasurement = measurement;
 }
 

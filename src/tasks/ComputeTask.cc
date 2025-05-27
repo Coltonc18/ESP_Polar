@@ -1,7 +1,5 @@
 #include "ComputeTask.h"
 
-#include <esp32-hal-ledc.h>
-
 TaskHandle_t ComputeTask::taskHandle = NULL;
 
 void ComputeTask::start() {

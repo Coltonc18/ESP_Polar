@@ -1,11 +1,9 @@
 #ifndef _BOUNDED_QUEUE_HPP
 #define _BOUNDED_QUEUE_HPP
 
-#include "Config.h"
+#include "Constants.h"
 
 #include <queue>
-
-#define NUM_SAMPLES 30   // Number of samples to store to compute moving averages
 
 template <typename T>
 class BoundedQueue {
