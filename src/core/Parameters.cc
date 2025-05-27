@@ -19,6 +19,10 @@ float HRV_HTI = 0;
 uint16_t HRV_TIPPI = 0;
 uint16_t hist[NUM_BINS] = { 0 };
 uint8_t maxBinValue = 0;
+MEM_Context mem_ctx;
+float HRV_LF = 0;
+float HRV_HF = 0;
+float HRV_LF_HF_Ratio = 0;
 
 void resetHRVParameters(void) {
   ppiQueue.clear();
@@ -42,6 +46,10 @@ void resetHRVParameters(void) {
     hist[i] = 0;
   }
   maxBinValue = 0;
+  MEM_Init(&mem_ctx);
+  HRV_LF = 0;
+  HRV_HF = 0;
+  HRV_LF_HF_Ratio = 0;
 }
 
 void updateHRVParameters(uint16_t measurement) {
@@ -58,6 +66,7 @@ void updateHRVParameters(uint16_t measurement) {
   updateHRV_pPPI50(measurement, popped);
   updateHRV_HTI(measurement);
   updateHRV_TIPPI(measurement);
+  ProcessNewPPI(measurement);
   prevMeasurement = measurement;
 }
 

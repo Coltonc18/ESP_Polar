@@ -1,25 +1,29 @@
-/*
- * Note: NN and PPI are used interchangeably in this code. PPI is the term
- * used by Polar, while NN is the term used in literature.
- */
 #ifndef _PARAMETERS_H
 #define _PARAMETERS_H
 
 #include "../utils/Config.h"
 #include "../utils/BoundedQueue.hpp"
+#include "./MEM.h"
 
+// Histogram Parameters
 #define NUM_BINS 218      // Number of bins in the histogram (300 - 2000 ms) / 7.8125 ms
 #define BIN_WIDTH 7.815   // Width of histogram bins (in ms)
 #define BIN_START 300.0   // Lowest PPI value in the histogram (in ms)
 #define BIN_END 2000.0    // Highest PPI value in the histogram (in ms)
 #define HIST_WIDTH BIN_END - BIN_START  // Width of the histogram (in ms)
-
 #define MAX_PPI_DIFF 300
 
+// Function macro to convert PPI to bin index
 #define PPI_TO_BIN(x) \
     (((int)(((x) - BIN_START) / BIN_WIDTH) < 0) ? 0 : \
     (((int)(((x) - BIN_START) / BIN_WIDTH) >= NUM_BINS) ? (NUM_BINS-1) : \
     (int)(((x) - BIN_START) / BIN_WIDTH)))
+
+// MEM-based PSD Estimation Parameters
+#define MODEL_ORDER NUM_SAMPLES / log(2*NUM_SAMPLES)  // Order of the AR model
+#define FREQ_START 0.04  // Start frequency of the PSD
+#define FREQ_END 0.4     // End frequency of the PSD
+#define FREQ_BINS 50     // Number of frequency bins
 
 // Queue to store PPI measurements
 extern BoundedQueue<uint16_t> ppiQueue;
@@ -79,6 +83,19 @@ extern uint16_t HRV_TIPPI;
 // Bin size is 7.8125 ms. Allowable range of PPI intervals is 300 - 2000 ms
 extern uint16_t hist[NUM_BINS];
 extern uint8_t maxBinValue;
+
+// MEM-based PSD Estimation Context
+extern MEM_Context mem_ctx;
+
+// Low Frequency Power
+extern float HRV_LF;
+
+// High Frequency Power
+extern float HRV_HF;
+
+// Ratio of Low Frequency Power to High Frequency Power
+extern float HRV_LF_HF_Ratio;
+
 
 // Function prototypes
 void resetHRVParameters(void);  // Reset all HRV parameters to default values
