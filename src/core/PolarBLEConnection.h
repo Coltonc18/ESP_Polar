@@ -12,6 +12,11 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
+#define SERVICE_UUID "FB005C80-02E7-F387-1CAD-8ACD2D8DF0C8"
+#define CONTROL_CHAR_UUID "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8"
+#define DATA_CHAR_UUID "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8"
+#define MTU 232
+
 typedef struct ppi_data {
   unsigned long timestamp;
   uint8_t  heartRate;
@@ -92,9 +97,11 @@ class PolarBLEConnection {
       }
 
       void onResult(BLEAdvertisedDevice advertisedDevice) {
-        Serial.println("Found device: " + advertisedDevice.toString());
-        delay(20);
+        // Print (or not) each device found
+        // Serial.println("Found device: " + advertisedDevice.toString());
+        // delay(20);
         if (advertisedDevice.getName().indexOf(device_name_) != -1) {
+          // Found the device we are looking for!
           Serial.println("Found device: " + advertisedDevice.toString());
           BLEDevice::getScan()->stop();
           if (myDevice != nullptr) {
@@ -104,7 +111,7 @@ class PolarBLEConnection {
           myDevice = new BLEAdvertisedDevice(advertisedDevice);
           doConnect = true;
         }
-        // else we do not care about the advertised device, so do nothing.
+        // else we do not care about the advertised device, so just continue scanning
       }
 
     private:

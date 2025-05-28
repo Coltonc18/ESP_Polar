@@ -18,55 +18,56 @@ QueueHandle_t PolarBLEConnection::ppiQueue;
 
 PolarBLEConnection::PolarBLEConnection() :
   PolarBLEConnection(
-    "FB005C80-02E7-F387-1CAD-8ACD2D8DF0C8",
-    "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8",
-    "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8") {}
+    SERVICE_UUID,
+    CONTROL_CHAR_UUID,
+    DATA_CHAR_UUID) {
+}
 
 PolarBLEConnection::PolarBLEConnection(String serviceUUID,
-                                       String controlCharUUID,
-                                       String dataCharUUID) {
-  this->serviceUUID =     BLEUUID(serviceUUID.c_str());
+  String controlCharUUID,
+  String dataCharUUID) {
+  this->serviceUUID = BLEUUID(serviceUUID.c_str());
   this->controlCharUUID = BLEUUID(controlCharUUID.c_str());
-  this->dataCharUUID =    BLEUUID(dataCharUUID.c_str());
+  this->dataCharUUID = BLEUUID(dataCharUUID.c_str());
 
   this->ppiQueue = xQueueCreate(PPI_QUEUE_SIZE, sizeof(PPIData));
 }
 
 // Call the correct callback function based on the type of measurement
 void PolarBLEConnection::NotifyCallback(
-          BLERemoteCharacteristic* pBLERemoteCharacteristic,
-          uint8_t* pData,
-          size_t length,
-          bool isNotify) {
+  BLERemoteCharacteristic* pBLERemoteCharacteristic,
+  uint8_t* pData,
+  size_t length,
+  bool isNotify) {
 
   switch (pData[0] & 0x3F) {
-    case 0x01:
-      PpgNotifyCallback(pData, length);
-      break;
-    case 0x03:
-      PpiNotifyCallback(pData, length);
-      break;
-    default:
-      String response = "Response: [";
-      if (length > 0) {
-        for (int i = 0; i < length; i++) {
-          response += String(pData[i], HEX) + " ";
-        }
-        response += "]";
-        Serial.println(response);
+  case 0x01:
+    PpgNotifyCallback(pData, length);
+    break;
+  case 0x03:
+    PpiNotifyCallback(pData, length);
+    break;
+  default:
+    String response = "Response: [";
+    if (length > 0) {
+      for (int i = 0; i < length; i++) {
+        response += String(pData[i], HEX) + " ";
       }
+      response += "]";
+      Serial.println(response);
+    }
   }  // end switch
 }
 
 // Parses the PPG data
 void PolarBLEConnection::PpgNotifyCallback(
-          uint8_t* &pData,
-          size_t &length) {
+  uint8_t*& pData,
+  size_t& length) {
 
   // Extract the timestamp from bytes 1 - 8
   uint64_t timestamp = 0;
   for (int i = 0; i < 8; i++) {
-    timestamp |= (uint64_t)pData[i+1] << (8*i);
+    timestamp |= (uint64_t)pData[i + 1] << (8 * i);
   }
 
   // Check if the PPG measurement is of type 0x00
@@ -78,14 +79,14 @@ void PolarBLEConnection::PpgNotifyCallback(
   if (pData[0] & 0x80 != 0) {  // Data is compressed
     const uint8_t CHANNELS = 0x04;
     // Resolution is 0x16 (22 bit value)
-    const uint8_t RESOLUTION  = 0x16;
+    const uint8_t RESOLUTION = 0x16;
     // This takes up 3 bytes (almost)
     const uint8_t RES_BYTES = 0x03;
 
     // Calculate Reference Sample (first sample)
     uint8_t refSampleIndex = 10;  // = 10
     uint8_t refSampleSize = CHANNELS * RES_BYTES;  // = 12
-    
+
     uint32_t maskPmdData = -0x1 << RESOLUTION;
     uint32_t bitmask = maskPmdData - 1;
 
@@ -95,12 +96,12 @@ void PolarBLEConnection::PpgNotifyCallback(
       // Construct a 24 bit int from the three bytes of data for each channel
       int32_t value = 0;
       for (int j = 0; j < 3; j++) {
-          value |= (pData[refSampleIndex + i*3 + j] << (j*8));
+        value |= (pData[refSampleIndex + i * 3 + j] << (j * 8));
       }
-      
+
       // If the result is negative, apply a bitmask to sign-extend it to 32 bits
       if ((value & bitmask) < 0) {
-          value |= 0xFFFFFFFF << (3*8);
+        value |= 0xFFFFFFFF << (3 * 8);
       }
 
       // Save reference sample into array
@@ -121,9 +122,9 @@ void PolarBLEConnection::PpgNotifyCallback(
     uint8_t sampleCount = pData[sampleCountIndex];
 
     // Extract the samples from the packet following the reference sample
-    std::vector<std::vector<int32_t>> samples(sampleCount+1, std::vector<int32_t>(CHANNELS));
+    std::vector<std::vector<int32_t>> samples(sampleCount + 1, std::vector<int32_t>(CHANNELS));
     samples[0] = refSample;
-    uint8_t deltaDataIndex = sampleCountIndex+1;  // = 24
+    uint8_t deltaDataIndex = sampleCountIndex + 1;  // = 24
     uint8_t bitIndex = 0;
 
     // Extract the samples from the packet following the reference sample
@@ -141,11 +142,11 @@ void PolarBLEConnection::PpgNotifyCallback(
 
         // If the delta is negative, sign extend it to 32 bits
         if (delta != 0) {
-            delta |= (INT32_MAX << (frameSize - 1));
+          delta |= (INT32_MAX << (frameSize - 1));
         }
 
         // Add the delta to the previous sample to get the current sample
-        samples[sample][channel] = samples[sample-1][channel] + delta;
+        samples[sample][channel] = samples[sample - 1][channel] + delta;
       }
     }
 
@@ -183,16 +184,16 @@ void processPpgData(uint64_t time, float ppgGrn, float ppgRed, float ppgInf, flo
 
 // Parses the PPI data
 void PolarBLEConnection::PpiNotifyCallback(
-          uint8_t* &pData,
-          size_t &length) {
+  uint8_t*& pData,
+  size_t& length) {
 
   for (int i = 10; i < length; i += 6) {
     // Extract the data from the current ppi response
     uint8_t heartRate = pData[i];
-    uint16_t ppi = pData[i+1] | (pData[i+2] << 8);
-    uint16_t ppError = pData[i+3] | (pData[i+4] << 8);
-    uint8_t flags = pData[i+5];
-    
+    uint16_t ppi = pData[i + 1] | (pData[i + 2] << 8);
+    uint16_t ppError = pData[i + 3] | (pData[i + 4] << 8);
+    uint8_t flags = pData[i + 5];
+
     PPIData data;
     data.timestamp = millis();
     data.heartRate = heartRate;
@@ -200,7 +201,7 @@ void PolarBLEConnection::PpiNotifyCallback(
     data.ppError = ppError;
     data.flags = flags;
     data.valid = !(flags & 0x1) && ppError > 0 && ppError < 30;  // ignore skin flags for now
-    
+
     xQueueSendToBack(ppiQueue, &data, 0);
   }
 }
@@ -221,21 +222,21 @@ void PolarBLEConnection::ReadData() {
 bool PolarBLEConnection::ConnectToServer() {
   Serial.print("Connecting to ");
   Serial.println(myDevice->getAddress().toString());
-  
+
   BLEClient* pClient = BLEDevice::createClient();
   Serial.println(" - Created client");
 
   pClient->setClientCallbacks(new MyClientCallback());
 
   // neopixelWrite(ONBOARD_LED, 0, 0, 0);
-  
+
   // Connect to the remote BLE Server.
   pClient->connect(myDevice);
   Serial.println(" - Connected to server");
 
   // Set MTU size
-  if (pClient->setMTU(232)) {
-    Serial.println(" - MTU set to 232");
+  if (pClient->setMTU(MTU)) {
+    Serial.printf(" - MTU set to %d\n", MTU);
   } else {
     Serial.println(" * Failed to set MTU.");
     return false;
@@ -244,8 +245,7 @@ bool PolarBLEConnection::ConnectToServer() {
   // Obtain a reference to the service we are after in the remote BLE server.
   BLERemoteService* pRemoteService = pClient->getService(serviceUUID);
   if (pRemoteService == nullptr) {
-    Serial.print(" * Failed to find our service UUID: ");
-    Serial.println(serviceUUID.toString().c_str());
+    Serial.println(" * Failed to find our service UUID.");
     pClient->disconnect();
     return false;
   }
@@ -264,8 +264,8 @@ bool PolarBLEConnection::ConnectToServer() {
   // Register for notifications
   if (pDataCharacteristic->canNotify()) {
     pDataCharacteristic->registerForNotify([this](BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
-        this->NotifyCallback(pBLERemoteCharacteristic, pData, length, isNotify);
-        });
+      this->NotifyCallback(pBLERemoteCharacteristic, pData, length, isNotify);
+      });
     Serial.println(" - Registered for data notifications");
   } else {
     Serial.println(" * Data characteristic doesn't support notifications");
@@ -285,14 +285,14 @@ bool PolarBLEConnection::ConnectToServer() {
     Serial.println(" * Control characteristic doesn't support notifications or indications");
   }
 
-  uint8_t getPpg[] =    {0x01, 0x01};
-  uint8_t getAccel[] =  {0x01, 0x02};
-  uint8_t getPpi[] =    {0x01, 0x03};
+  uint8_t getPpg[] = { 0x01, 0x01 };
+  uint8_t getAccel[] = { 0x01, 0x02 };
+  uint8_t getPpi[] = { 0x01, 0x03 };
 
-  uint8_t startPpg[] =  {0x02, 0x01, 0x00, 0x01, 0x87, 0x00, 0x01, 0x01, 0x16, 0x00, 0x04, 0x01, 0x04};
-  uint8_t startAccel[]= {0x02, 0x02, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03};
-  uint8_t startPpi[] =  {0x02, 0x03};
-  uint8_t startSdk[] =  {0x02, 0x09};
+  uint8_t startPpg[] = { 0x02, 0x01, 0x00, 0x01, 0x87, 0x00, 0x01, 0x01, 0x16, 0x00, 0x04, 0x01, 0x04 };
+  uint8_t startAccel[] = { 0x02, 0x02, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03 };
+  uint8_t startPpi[] = { 0x02, 0x03 };
+  uint8_t startSdk[] = { 0x02, 0x09 };
 
   // Serial.println("Fetching Accel State");
   // pControlCharacteristic->writeValue(getAccel, sizeof(getAccel), true);

@@ -6,6 +6,8 @@
 
 #define NULL 0
 
+#define DEVICE_NAME "Polar Sense"
+
 // Pinout definitions
 #define ONBOARD_LED 48    // ESP32-S3 has an onboard Neopixel attached to this pin
 #define PWM_PIN  21       // Attatched to GPIO pin 21
