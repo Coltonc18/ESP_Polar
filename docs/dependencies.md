@@ -1,6 +1,6 @@
 # Dependencies
 
-This document lists all hardware and software dependencies required for the ESP32 Polar HRV Monitor project.
+This document lists all hardware and software dependencies required for the ESP32 Polar HRV Monitor project. See the [dependency graph](dependencies.png) for file system structure and dependencies.
 
 ## Hardware Requirements
 
@@ -36,22 +36,6 @@ This document lists all hardware and software dependencies required for the ESP3
   - Provides PWM functionality
   - Included with ESP32 board package
   - No separate installation needed
-
-### Project-Specific Libraries
-
-These libraries are included in the project and don't require separate installation:
-
-- PolarBLEConnection
-  - Handles BLE communication with Polar sensors
-  - Location: `lib/PolarBLEConnection/`
-
-- Parameters
-  - Manages HRV calculations and data storage
-  - Location: `lib/Parameters/`
-
-- BoundedQueue
-  - Implements a thread-safe queue for PPI data
-  - Location: `lib/BoundedQueue/`
 
 ## Version Compatibility
 
