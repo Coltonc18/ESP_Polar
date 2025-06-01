@@ -15,7 +15,7 @@ void BLEReceiveTask::start() {
   pBLEScan->setActiveScan(true);
 
   Serial.printf("Starting scan for %s...\n", DEVICE_NAME);
-  pBLEScan->start(10, false);
+  pBLEScan->start(5, false);
 
   // Initialize scanning state
   connection->doScan = true;
@@ -48,12 +48,12 @@ void BLEReceiveTask::taskFunction(void* parameters) {
         connection->doScan = false;
         isScanning = false;
 
-        // Blink the onboard LED green three times
-        for (int i = 0; i < 3; i++) {
+        // Blink the onboard LED green five times
+        for (int i = 0; i < 5; i++) {
           neopixelWrite(ONBOARD_LED, 0, 20, 0);
-          delay(333);
+          delay(200);
           neopixelWrite(ONBOARD_LED, 0, 0, 0);
-          delay(167);
+          delay(100);
         }
       } else {
         Serial.printf("Failed to connect to %s. Rescanning...\n", DEVICE_NAME);
@@ -65,6 +65,7 @@ void BLEReceiveTask::taskFunction(void* parameters) {
           neopixelWrite(ONBOARD_LED, 0, 0, 0);
           delay(167);
         }
+        neopixelWrite(ONBOARD_LED, 20, 0, 0);
 
         connection->doScan = true;
         isScanning = true;
@@ -82,9 +83,10 @@ void BLEReceiveTask::taskFunction(void* parameters) {
           neopixelWrite(ONBOARD_LED, 0, 0, 0);
           delay(167);
         }
+        neopixelWrite(ONBOARD_LED, 20, 0, 0);
 
         BLEScan* pBLEScan = BLEDevice::getScan();
-        pBLEScan->start(10, false);
+        pBLEScan->start(5, false);
         scanStartTime = millis();
       }
     }

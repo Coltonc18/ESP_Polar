@@ -67,6 +67,9 @@ extern uint8_t maxBinValue;
 // MEM-based PSD Estimation Context
 extern MEM_Context mem_ctx;
 
+// Total Power
+extern float HRV_TotalPower;
+
 // Low Frequency Power
 extern float HRV_LF;
 
@@ -93,5 +96,6 @@ void updateHRV_pPPI50(uint16_t measurement, uint16_t popped);
 void updateHRV_HTI(uint16_t measurement);
 void updateHRV_TIPPI(uint16_t measurement);
 void updateHistogram(uint16_t measurement, uint16_t popped);
+void updateMEM_Parameters(uint16_t measurement);
 
 #endif  // _PARAMETERS_H

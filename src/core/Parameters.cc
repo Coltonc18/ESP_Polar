@@ -20,6 +20,7 @@ uint16_t HRV_TIPPI = 0;
 uint16_t hist[NUM_BINS] = { 0 };
 uint8_t maxBinValue = 0;
 MEM_Context mem_ctx;
+float HRV_TotalPower = 0;
 float HRV_LF = 0;
 float HRV_HF = 0;
 float HRV_LF_HF_Ratio = 0;
@@ -47,6 +48,7 @@ void resetHRVParameters(void) {
   }
   maxBinValue = 0;
   MEM_Init(&mem_ctx);
+  HRV_TotalPower = 0;
   HRV_LF = 0;
   HRV_HF = 0;
   HRV_LF_HF_Ratio = 0;
@@ -66,7 +68,7 @@ void updateHRVParameters(uint16_t measurement) {
   updateHRV_pPPI50(measurement, popped);
   updateHRV_HTI(measurement);
   updateHRV_TIPPI(measurement);
-  ProcessNewPPI(&mem_ctx, measurement);
+  updateMEM_Parameters(measurement);
   prevMeasurement = measurement;
 }
 
@@ -124,7 +126,7 @@ void updateHRV_MedianPPI(uint16_t measurement) {
 
 void updateHRV_MaxPPI(uint16_t measurement, uint16_t popped) {
   // If the popped value was the max, reset the max
-  if (HRV_MaxPPI == popped) {
+  if (abs(HRV_MaxPPI - popped) < BIN_WIDTH) {
     HRV_MaxPPI = 0;
     // Find the max PPI interval
     for (int i = NUM_BINS - 1; i >= 0; i--) {
@@ -141,7 +143,7 @@ void updateHRV_MaxPPI(uint16_t measurement, uint16_t popped) {
 
 void updateHRV_MinPPI(uint16_t measurement, uint16_t popped) {
   // If the popped value was the min, reset the min
-  if (HRV_MinPPI == popped) {
+  if (abs(HRV_MinPPI - popped) < BIN_WIDTH) {
     HRV_MinPPI = UINT16_MAX;
     // Find the min PPI interval
     for (int i = 0; i < NUM_BINS; i++) {
@@ -272,10 +274,18 @@ void updateHRV_TIPPI(uint16_t measurement) {
   // Serial.printf("%u\n", HRV_TIPPI);
 }
 
+void updateMEM_Parameters(uint16_t measurement) {
+  ProcessNewPPI(&mem_ctx, measurement);
+  HRV_TotalPower = mem_ctx.total_power;
+  HRV_LF = mem_ctx.LF;
+  HRV_HF = mem_ctx.HF;
+  HRV_LF_HF_Ratio = mem_ctx.LF_HF_Ratio;
+}
+
 void printHRVParameters(uint16_t current_PPI) {
   // Print start marker, timestamp and all parameters in CSV format with fixed width
   Serial.print("START,");  // Line start marker
-  Serial.printf("%.2f,%u,%u,%.2f,%.2f,%u,%u,%.2f,%u,%u,%u,%.2f,%.2f,%u,END\r\n",
+  Serial.printf("%.2f,%u,%u,%.2f,%.2f,%u,%u,%.2f,%u,%u,%u,%.2f,%.2f,%u,%.0f,%.2f,%.2f,%.2f,END\r\n",
     millis() / 1000.0,  // Timestamp (seconds since start)
     PPI_Count,          // PPI Count
     current_PPI,        // Most recent PPI measurement
@@ -289,7 +299,11 @@ void printHRVParameters(uint16_t current_PPI) {
     HRV_RMSSD,          // RMSSD
     HRV_pPPI50,         // pPPI50
     HRV_HTI,            // HTI
-    HRV_TIPPI           // TIPPI
+    HRV_TIPPI,          // TIPPI
+    HRV_TotalPower,     // Total Power
+    HRV_LF,             // LF
+    HRV_HF,             // HF
+    HRV_LF_HF_Ratio     // LF/HF Ratio
   );
   delay(20);  // Increased delay to ensure complete transmission
 }

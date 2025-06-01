@@ -45,42 +45,42 @@ void PreprocessPPI(MEM_Context* ctx, uint16_t measurement) {
   ctx->buffer[ctx->index] = measurement;
   ctx->index = (ctx->index + 1) % NUM_SAMPLES;
 
-  // Median filter (5-point window) to remove artifacts
-  static float window[5];
-  static float filtered[NUM_SAMPLES];
+  // // Median filter (5-point window) to remove artifacts
+  // static float window[5];
+  // static float filtered[NUM_SAMPLES];
 
-  for (int i = 0; i < NUM_SAMPLES; i++) {
-    // Extract 5-point window centered at current sample
-    for (int j = -2; j <= 2; j++) {
-      int idx = (i + j + NUM_SAMPLES) % NUM_SAMPLES;
-      window[j + 2] = ctx->buffer[idx];
-    }
+  // for (int i = 0; i < NUM_SAMPLES; i++) {
+  //   // Extract 5-point window centered at current sample
+  //   for (int j = -2; j <= 2; j++) {
+  //     int idx = (i + j + NUM_SAMPLES) % NUM_SAMPLES;
+  //     window[j + 2] = ctx->buffer[idx];
+  //   }
 
-    // Sort window to find median
-    qsort(window, 5, sizeof(float), compare_float);
+  //   // Sort window to find median
+  //   qsort(window, 5, sizeof(float), compare_float);
 
-    // Replace outlier if it deviates more than 20% from median
-    float median = window[2];
-    if (ctx->buffer[i] > 1.2f * median || ctx->buffer[i] < 0.8f * median) {
-      filtered[i] = median;
-    }
-    else {
-      filtered[i] = ctx->buffer[i];
-    }
-  }
+  //   // Replace outlier if it deviates more than 20% from median
+  //   float median = window[2];
+  //   if (ctx->buffer[i] > 1.2f * median || ctx->buffer[i] < 0.8f * median) {
+  //     filtered[i] = median;
+  //   }
+  //   else {
+  //     filtered[i] = ctx->buffer[i];
+  //   }
+  // }
 
-  // Copy filtered data back to buffer
-  memcpy(ctx->buffer, filtered, NUM_SAMPLES * sizeof(float));
+  // // Copy filtered data back to buffer
+  // memcpy(ctx->buffer, filtered, NUM_SAMPLES * sizeof(float));
 
-  // Resample using cubic spline interpolation
-  static float resampled[NUM_SAMPLES];
-  for (int i = 0; i < NUM_SAMPLES; i++) {
-    float t = (float)i / (NUM_SAMPLES - 1);  // Normalized time [0,1]
-    resampled[i] = Interpolate(ctx->buffer, t);
-  }
+  // // Resample using cubic spline interpolation
+  // static float resampled[NUM_SAMPLES];
+  // for (int i = 0; i < NUM_SAMPLES; i++) {
+  //   float t = (float)i / (NUM_SAMPLES - 1);  // Normalized time [0,1]
+  //   resampled[i] = Interpolate(ctx->buffer, t);
+  // }
 
-  // Copy resampled data back to buffer
-  memcpy(ctx->buffer, resampled, NUM_SAMPLES * sizeof(float));
+  // // Copy resampled data back to buffer
+  // memcpy(ctx->buffer, resampled, NUM_SAMPLES * sizeof(float));
 }
 
 // 3. Burg's Method (optimized for fixed-point)
@@ -107,10 +107,10 @@ void BurgsMethod(MEM_Context* ctx) {
 
     // Compute reflection coefficient
     for (int t = m; t < NUM_SAMPLES - 1; t++) {
-      numerator += 2.0f * f_error[t] * b_error[t];
-      denominator += f_error[t] * f_error[t] + b_error[t + 1] * b_error[t + 1];
+      numerator += f_error[t] * b_error[t-1];
+      denominator += f_error[t] * f_error[t] + b_error[t-1] * b_error[t-1];
     }
-    k[m] = -numerator / (denominator + 1e-9f);  // Avoid division by zero
+    k[m] = -2.0f * numerator / (denominator + 1e-9f);  // Avoid division by zero
 
     // Update AR coefficients using Levinson recursion
     a[m] = k[m];
@@ -121,8 +121,8 @@ void BurgsMethod(MEM_Context* ctx) {
     // Update forward/backward prediction errors
     for (int t = NUM_SAMPLES - 1; t > m; t--) {
       float temp = f_error[t];
-      f_error[t] = f_error[t] + k[m] * b_error[t - 1];
-      b_error[t] = b_error[t - 1] + k[m] * temp;
+      f_error[t] = f_error[t] + k[m] * b_error[t-1];
+      b_error[t] = b_error[t-1] + k[m] * temp;
     }
 
     // Save current AR coefficients for next iteration
@@ -148,7 +148,29 @@ inline void read_complex_exp(int i, int f, float* real, float* imag) {
 
 // 4. PSD Calculation (with precomputed exponents)
 void ComputePSD(MEM_Context* ctx) {
+  // Calculate the actual signal variance
+  float mean = 0.0f;
+  float variance = 0.0f;
+  
+  // First pass: calculate mean
+  for (int i = 0; i < NUM_SAMPLES; i++) {
+    mean += ctx->buffer[i];
+  }
+  mean /= NUM_SAMPLES;
+  
+  // Second pass: calculate variance
+  for (int i = 0; i < NUM_SAMPLES; i++) {
+    float diff = ctx->buffer[i] - mean;
+    variance += diff * diff;
+  }
+  variance /= (NUM_SAMPLES - 1);
+
+  // Calculate frequency step for normalization
   const float freq_step = (FREQ_END - FREQ_START) / FREQ_BINS;
+  const float norm_factor = 1.0f / (2.0f * M_PI * freq_step);
+  
+  // Scale factor to convert to ms² and normalize to expected range
+  const float scale_factor = 1000.0f / variance;  // Adjust this value based on expected range
 
   for (int f = 0; f < FREQ_BINS; f++) {
     float denominator_real = 1.0f;
@@ -167,36 +189,58 @@ void ComputePSD(MEM_Context* ctx) {
       denominator_imag -= temp_imag;
     }
 
-    // Compute power spectrum: 1/|denominator|^2
-    float magnitude_squared = denominator_real * denominator_real +
-      denominator_imag * denominator_imag;
-    ctx->psd[f] = 1.0f / (magnitude_squared + 1e-9f);  // Avoid division by zero by adding a small epsilon
+    // Compute power spectrum: variance / |denominator|^2
+    float magnitude_squared = denominator_real * denominator_real + denominator_imag * denominator_imag;
+    
+    // Normalize the PSD and convert to ms² with scaling
+    ctx->psd[f] = (variance * norm_factor * scale_factor) / (magnitude_squared + 1e-9f);
   }
 }
 
 // Helper function to integrate PSD over a frequency range
-float IntegratePSD(const float* psd, float freq_start, float freq_end) {
-  // Convert frequency range to bin indices
-  int start_bin = (int)((freq_start - FREQ_START) * FREQ_BINS / (FREQ_END - FREQ_START));
-  int end_bin = (int)((freq_end - FREQ_START) * FREQ_BINS / (FREQ_END - FREQ_START));
-
-  // Clamp indices to valid range
-  start_bin = (start_bin < 0) ? 0 : (start_bin >= FREQ_BINS ? FREQ_BINS - 1 : start_bin);
-  end_bin = (end_bin < 0) ? 0 : (end_bin >= FREQ_BINS ? FREQ_BINS - 1 : end_bin);
-
-  // Ensure start_bin is less than end_bin
-  if (start_bin > end_bin) {
-    int temp = start_bin;
-    start_bin = end_bin;
-    end_bin = temp;
+float IntegratePSD(const float* psd, float freq_start, float freq_end) {  
+  if (freq_start >= freq_end) {
+    return 0.0f;
   }
 
-  // Calculate frequency step size
-  float freq_step = (FREQ_END - FREQ_START) / FREQ_BINS;
+  // Calculate exact bin positions (can be fractional)
+  float start_pos = (freq_start - FREQ_START) * (FREQ_BINS - 1) / (FREQ_END - FREQ_START);
+  float end_pos = (freq_end - FREQ_START) * (FREQ_BINS - 1) / (FREQ_END - FREQ_START);
+  
+  // Get integer bin indices
+  int start_bin = (int)start_pos;
+  int end_bin = (int)end_pos;
+  
+  // Clamp to valid range
+  start_bin = fmaxf(0, fminf(start_bin, FREQ_BINS - 2));
+  end_bin = fmaxf(0, fminf(end_bin, FREQ_BINS - 2));
 
-  // Integrate using trapezoidal rule
+  // Calculate frequency step size
+  float freq_step = (FREQ_END - FREQ_START) / (FREQ_BINS - 1);
+  
+  // Initialize integral
   float integral = 0.0f;
-  for (int i = start_bin; i < end_bin; i++) {
+  
+  // Handle fractional start bin
+  if (start_pos > start_bin) {
+    float frac = start_pos - start_bin;
+    float p0 = psd[start_bin];
+    float p1 = psd[start_bin + 1];
+    integral += (p0 + (p1 - p0) * frac) * (1.0f - frac) * freq_step * 0.5f;
+    start_bin++;
+  }
+  
+  // Handle fractional end bin
+  if (end_pos < end_bin + 1) {
+    float frac = end_pos - end_bin;
+    float p0 = psd[end_bin];
+    float p1 = psd[end_bin + 1];
+    integral += (p0 + (p1 - p0) * frac) * frac * freq_step * 0.5f;
+    end_bin--;
+  }
+  
+  // Integrate over complete bins using trapezoidal rule
+  for (int i = start_bin; i <= end_bin; i++) {
     integral += (psd[i] + psd[i + 1]) * 0.5f * freq_step;
   }
 
@@ -205,15 +249,39 @@ float IntegratePSD(const float* psd, float freq_start, float freq_end) {
 
 // 5. Real-Time Update Handler
 void ProcessNewPPI(MEM_Context* ctx, uint16_t measurement) {
+  const float MIN_POWER = 1e-8f;  // Reduced minimum power threshold
   PreprocessPPI(ctx, measurement);
 
   if (++ctx->samples_processed >= NUM_SAMPLES) {
     BurgsMethod(ctx);
     ComputePSD(ctx);
 
-    // Optional: VO2 prediction using LF/HF ratios
-    float lf = IntegratePSD(ctx->psd, 0.04f, 0.15f);
-    float hf = IntegratePSD(ctx->psd, 0.15f, 0.4f);
-    float ratio = lf / hf;
+    // Calculate total power for normalization
+    ctx->total_power = IntegratePSD(ctx->psd, 0.003f, 0.4f);  // Full HRV range
+    
+    // VO2 prediction using LF/HF ratios
+    ctx->LF = IntegratePSD(ctx->psd, 0.04f, 0.15f);
+    ctx->HF = IntegratePSD(ctx->psd, 0.15f, 0.4f);
+    
+    // Normalize powers to percentage of total
+    if (ctx->total_power > MIN_POWER) {
+      ctx->LF = (ctx->LF / ctx->total_power) * 100.0f;
+      ctx->HF = (ctx->HF / ctx->total_power) * 100.0f;
+    } else {
+      ctx->LF = MIN_POWER;
+      ctx->HF = MIN_POWER;
+    }
+    
+    // Calculate ratio only if both powers are significant
+    if (ctx->LF > MIN_POWER && ctx->HF > MIN_POWER) {
+      ctx->LF_HF_Ratio = ctx->LF / ctx->HF;
+    } else {
+      ctx->LF_HF_Ratio = 1.0f;  // Default to 1.0 if powers are too small
+    }
+  } else {
+    // Initialize values to small non-zero numbers before we have enough samples
+    ctx->LF = MIN_POWER;
+    ctx->HF = MIN_POWER;
+    ctx->LF_HF_Ratio = 1.0f;
   }
 } 
