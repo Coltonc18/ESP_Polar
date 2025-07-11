@@ -1,0 +1,44 @@
+## Near-term steps
+- **Documentation and commenting**
+	- potential to add members to project
+	- might be a while before I look at it again
+- Get power curve
+	- FFT computes over a time period to get power density distribution
+	- **research maximum entropy method** (MEM)
+		- may be easier/better than FFT
+		- *methods and results* section of the [[shiraishi-et-al-real-time-analysis-of-the-heart-rate-variability-during-incremental-exercise-for-the-detection-of-the.pdf|article]]
+- integrate under curve with bounds for low and high freqency
+- Get LF/HF ratio
+	- Rolling 60 second conditions met $\rightarrow$ stimulation
+	- A ratio between low freq and high freq should normalize inherently, but for conditions that must be met by just high freqency, may still need to normalize values somehow...
+
+## Notes for later:
+- Have a design meeting
+	- need potential users input
+- Better user interface ideas
+	- screen
+	- led indicators (in enclosure, not on board)
+		- power status
+		- bluetooth status
+		- stim on/off
+	- buttons for input (retry connection, navigate menus, manual stim)
+	- switches (stim on/off, device on/off)
+	- connection on startup auto-retry if device not found
+		- configuration for device type/name
+	- enclosure & pcbs
+		- battery power + charging + indicators
+	- SD card integration for logging?
+- run reliability tests on BLE connection
+	- what if it drops?
+	- what is its range?
+- how long can the polar last on a charge? esp should last just as long
+	- measure power draw to calculate battery size needed
+- motor integration to interface with stimulation device
+- investigate sources of PP-Error
+	- device cites movement?
+	- light leak?
+		- wrap the device?
+	- device placement (where on the arm, or leg)
+	- get acceleration data from device too and graph *acceleration vs error* to see correlation
+- [[s41746-020-00348-6 (1).pdf|deep learning viablility?]]
+- 
