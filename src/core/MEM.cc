@@ -166,7 +166,7 @@ void ComputePSD(MEM_Context* ctx) {
   variance /= (NUM_SAMPLES - 1);
 
   // Calculate frequency step for normalization
-  const float freq_step = (FREQ_END - FREQ_START) / FREQ_BINS;
+  const float freq_step = (FREQ_HIGH - FREQ_LOW) / FREQ_BINS;
   const float norm_factor = 1.0f / (2.0f * M_PI * freq_step);
   
   // Scale factor to convert to ms² and normalize to expected range
@@ -204,8 +204,8 @@ float IntegratePSD(const float* psd, float freq_start, float freq_end) {
   }
 
   // Calculate exact bin positions (can be fractional)
-  float start_pos = (freq_start - FREQ_START) * (FREQ_BINS - 1) / (FREQ_END - FREQ_START);
-  float end_pos = (freq_end - FREQ_START) * (FREQ_BINS - 1) / (FREQ_END - FREQ_START);
+  float start_pos = (freq_start - FREQ_LOW) * (FREQ_BINS - 1) / (FREQ_HIGH - FREQ_LOW);
+  float end_pos = (freq_end - FREQ_LOW) * (FREQ_BINS - 1) / (FREQ_HIGH - FREQ_LOW);
   
   // Get integer bin indices
   int start_bin = (int)start_pos;
@@ -216,7 +216,7 @@ float IntegratePSD(const float* psd, float freq_start, float freq_end) {
   end_bin = fmaxf(0, fminf(end_bin, FREQ_BINS - 2));
 
   // Calculate frequency step size
-  float freq_step = (FREQ_END - FREQ_START) / (FREQ_BINS - 1);
+  float freq_step = (FREQ_HIGH - FREQ_LOW) / (FREQ_BINS - 1);
   
   // Initialize integral
   float integral = 0.0f;
@@ -257,31 +257,31 @@ void ProcessNewPPI(MEM_Context* ctx, uint16_t measurement) {
     ComputePSD(ctx);
 
     // Calculate total power for normalization
-    ctx->total_power = IntegratePSD(ctx->psd, 0.003f, 0.4f);  // Full HRV range
+    ctx->total_power = IntegratePSD(ctx->psd, FREQ_VLOW, FREQ_HIGH);  // Full HRV range
     
     // VO2 prediction using LF/HF ratios
-    ctx->LF = IntegratePSD(ctx->psd, 0.04f, 0.15f);
-    ctx->HF = IntegratePSD(ctx->psd, 0.15f, 0.4f);
+    ctx->LF = IntegratePSD(ctx->psd, FREQ_LOW, FREQ_MID);
+    ctx->HF = IntegratePSD(ctx->psd, FREQ_MID, FREQ_HIGH);
     
     // Normalize powers to percentage of total
-    if (ctx->total_power > MIN_POWER) {
-      ctx->LF = (ctx->LF / ctx->total_power) * 100.0f;
-      ctx->HF = (ctx->HF / ctx->total_power) * 100.0f;
-    } else {
-      ctx->LF = MIN_POWER;
-      ctx->HF = MIN_POWER;
-    }
+    // if (ctx->total_power > MIN_POWER) {
+    //   ctx->LF = (ctx->LF / ctx->total_power) * 100.0f;
+    //   ctx->HF = (ctx->HF / ctx->total_power) * 100.0f;
+    // } else {
+    //   ctx->LF = MIN_POWER;
+    //   ctx->HF = MIN_POWER;
+    // }
     
     // Calculate ratio only if both powers are significant
     if (ctx->LF > MIN_POWER && ctx->HF > MIN_POWER) {
       ctx->LF_HF_Ratio = ctx->LF / ctx->HF;
     } else {
-      ctx->LF_HF_Ratio = 1.0f;  // Default to 1.0 if powers are too small
+      ctx->LF_HF_Ratio = 0.0f;  // Default to 0.0 if either power is too small
     }
   } else {
     // Initialize values to small non-zero numbers before we have enough samples
     ctx->LF = MIN_POWER;
     ctx->HF = MIN_POWER;
-    ctx->LF_HF_Ratio = 1.0f;
+    ctx->LF_HF_Ratio = 0.0f;
   }
 } 

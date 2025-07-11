@@ -19,8 +19,10 @@
 
 // MEM-based PSD Estimation Parameters
 #define MODEL_ORDER ((int)(NUM_SAMPLES / log(2*NUM_SAMPLES) + 0.5))
-#define FREQ_START 0.04   // Start frequency of the PSD
-#define FREQ_END 0.4      // End frequency of the PSD
+#define FREQ_VLOW 0.003   // Very low frequency
+#define FREQ_LOW 0.04     // Low frequency
+#define FREQ_MID 0.15     // Middle frequency
+#define FREQ_HIGH 0.4     // High frequency
 #define FREQ_BINS 50      // Number of frequency bins
 
 // Constants for parameters

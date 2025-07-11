@@ -6,8 +6,8 @@ import sys
 # Initialize constants
 num_samples = 0
 FREQ_BINS = 0
-FREQ_START = 0
-FREQ_END = 0
+FREQ_LOW = 0
+FREQ_HIGH = 0
 
 # Constants from MEM.h
 try:
@@ -20,13 +20,13 @@ try:
         for line in params:
             if "FREQ_BINS" in line and "#define" in line:
                 FREQ_BINS = int(line.split()[2])
-            elif "FREQ_START" in line and "#define" in line:
-                FREQ_START = float(line.split()[2])
-            elif "FREQ_END" in line and "#define" in line:
-                FREQ_END = float(line.split()[2])
+            elif "FREQ_LOW" in line and "#define" in line:
+                FREQ_LOW = float(line.split()[2])
+            elif "FREQ_HIGH" in line and "#define" in line:
+                FREQ_HIGH = float(line.split()[2])
 
     # Validate constants
-    if num_samples == 0 or FREQ_BINS == 0 or FREQ_START == 0 or FREQ_END == 0:
+    if num_samples == 0 or FREQ_BINS == 0 or FREQ_LOW == 0 or FREQ_HIGH == 0:
         raise ValueError("Failed to read all required constants")
 
     # Calculate MODEL_ORDER based on NUM_SAMPLES
@@ -38,7 +38,7 @@ except Exception as e:
 
 def generate_exp_table():
     # Generate frequency points
-    freqs = np.linspace(FREQ_START, FREQ_END, FREQ_BINS)
+    freqs = np.linspace(FREQ_LOW, FREQ_HIGH, FREQ_BINS)
     
     output_lines = []
     output_lines.append("// Generated with command: python scripts/generate_exp_table.py > src/utils/exp_table.h")

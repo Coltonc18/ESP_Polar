@@ -28,7 +28,7 @@ void ComputeTask::taskFunction(void* parameters) {
   while (1) {
     if (xQueueReceive(PolarBLEConnection::ppiQueue, &currentData, portMAX_DELAY) == pdTRUE) {
       // Update voltage output if currentData is valid and not too different from the last measurement
-      valid = (((currentData.ppi - prevPPI) < MAX_PPI_DIFF) || prevPPI == 0) && currentData.valid;
+      valid = ((abs(currentData.ppi - prevPPI) < MAX_PPI_DIFF) || prevPPI < BIN_START) && currentData.valid;
 
       // Store the most recent valid PPI
       validPPI = valid ? currentData.ppi : prevPPI;

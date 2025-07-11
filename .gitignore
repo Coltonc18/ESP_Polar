@@ -70,5 +70,5 @@ Thumbs.db
 .editorconfig
 
 # Jupyter Notebook files
-*.ipynb
-.ipynb_checkpoints/
+# *.ipynb
+# .ipynb_checkpoints/
