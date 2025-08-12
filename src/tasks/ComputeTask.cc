@@ -4,7 +4,16 @@ TaskHandle_t ComputeTask::taskHandle = NULL;
 
 void ComputeTask::start() {
   // Setup PWM on Channel 0 (Pin 21)
-  ledcAttach(PWM_PIN, PWM_FREQ, PWM_RES);  // Attach gpio to channel 0
+  bool success = ledcAttach(PWM_PIN, PWM_FREQ, PWM_RES);  // Attach gpio to channel 0
+
+  if (!success) {
+    Serial.println("Failed to attach PWM to pin " + String(PWM_PIN));
+    return;
+  } else {
+    Serial.println("PWM attached to pin " + String(PWM_PIN));
+  }
+
+  delay(100);
 
   // Start the PWM task on Core 1 (priority 2, higher than BLE)
   xTaskCreatePinnedToCore(taskFunction, "PWM_Task", 4096, NULL, 2, &taskHandle, 1);
@@ -37,7 +46,7 @@ void ComputeTask::taskFunction(void* parameters) {
       prevPPI = valid ? currentData.ppi : prevPPI;
 
       // Calculate duty cycle
-      dutyCycle = ((float)4095 / HIST_WIDTH) * (validPPI - BIN_START);
+      dutyCycle = (4095.0 / (HIST_WIDTH)) * (validPPI - (BIN_START));
 
       // Write voltage output to PWM_PIN
       ledcWrite(PWM_PIN, (uint32_t)dutyCycle);
